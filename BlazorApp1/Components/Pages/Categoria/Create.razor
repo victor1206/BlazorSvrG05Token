@@ -1,0 +1,48 @@
+﻿@page "/categoria/create"
+@using BlazorApp1.DTO.CategoriaDTO
+@using BlazorApp1.Services
+<h3>Create</h3>
+
+<EditForm Model="categoriaGuardar" OnValidSubmit="Guardar">
+    <div class="mb-3">
+        <label class="form-label">Nombre Usuario</label>
+        <InputText class="form-control" @bind-Value="categoriaGuardar.nombre" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <button class="btn btn-dark" @onclick="Index">Regresar</button>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
+
+</EditForm>
+
+@inject CategoriaService categoriaService;
+@inject NavigationManager NavManager;
+
+@code {
+    private CategoriaGuardarDTO categoriaGuardar = new CategoriaGuardarDTO();
+    private string errorMessage;
+
+    private async Task Guardar()
+    {
+        var resultado = await categoriaService.PostCategoria(categoriaGuardar);
+        if (resultado)
+        {
+            Index();
+            return;
+        }
+        else
+        {
+            errorMessage = "Error al guardar la categoria";    
+        }
+
+    }
+
+    void Index()
+    {
+        NavManager.NavigateTo("/categoria/index", true);
+    }
+}

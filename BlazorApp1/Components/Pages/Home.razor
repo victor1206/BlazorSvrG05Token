@@ -1,0 +1,68 @@
+﻿@page "/"
+@using BlazorApp1.Services
+@using BlazorApp1.DTO
+
+
+<PageTitle>Login</PageTitle>
+
+<EditForm Model="userSession" OnValidSubmit="Login">
+    <div class="mb-3">
+        <label class="form-label">Nombre Usuario</label>
+        <InputText class="form-control" @bind-Value="userSession.Login" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Contraseña</label>
+        <InputText type="password" class="form-control" @bind-Value="userSession.Clave" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Login</button>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
+
+</EditForm>
+
+@inject NavigationManager navigationManager
+@inject AuthService authService
+
+@code {
+    private UsuarioLoginDTO userSession = new UsuarioLoginDTO();
+    private string errorMessage;
+
+    private bool isAuthenticated;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            isAuthenticated = await authService.IsAuthenticated();
+
+            if (isAuthenticated)
+            {
+                navigationManager.NavigateTo("/counter");
+            }
+            else
+            {
+                navigationManager.NavigateTo("/");
+            }
+
+            StateHasChanged();
+        }
+    }
+
+    private async Task Login()
+    {
+        var token = await authService.Login(userSession);
+        if (string.IsNullOrEmpty(token))
+        {
+            errorMessage = "Credenciales incorrectas";
+            return;
+        }
+
+        await authService.SetToken(token);
+        navigationManager.NavigateTo("/weather", true);
+    }
+}

@@ -1,0 +1,88 @@
+﻿@page "/categoria/index"
+@using BlazorApp1.DTO
+@using BlazorApp1.DTO.CategoriaDTO
+@using BlazorApp1.Services
+
+<h3>Lista de Categorias</h3>
+
+<button id="idNuevo" class="btn btn-primary" @onclick="newCategoria">Nuevo Usuario</button>
+@if (categorias == null)
+{
+    <p><em>Cargando...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var categ in categorias)
+            {
+                <tr>
+                    <td>@categ.Nombre</td>
+                    <td><button class="btn btn-success" @onclick="(() => goModify(categ.Id))">Modificar</button></td>
+                    <td><button class="btn btn-info" @onclick="(() => goDetail(categ.Id))">Detalle</button></td>
+                    <td><button class="btn btn-danger" @onclick="(() => goDelete(categ.Id))">Eliminar</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+
+@inject CategoriaService categoriaService;
+@inject NavigationManager NavManager;
+@code {
+    private List<CategoriaSalidaDTO> categorias;
+    private string errorMessage;
+
+    private bool isFirstRender = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Solo queremos hacer esto en la primera renderización
+        if (firstRender)
+        {
+            try
+            {
+                categorias = await categoriaService.GetCategoria(); // Llamamos al método para cargar productos
+                StateHasChanged(); // Llamamos a StateHasChanged para refrescar la UI
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al cargar productos: {ex.Message}");
+            }
+        }
+    }
+
+    void newCategoria()
+    {
+        NavManager.NavigateTo("/categoria/create");
+    }
+
+    void goModify(int pId)
+    {
+        NavManager.NavigateTo("/categoria/edit/" + pId);
+
+    }
+
+    void goDetail(int pId)
+    {
+        NavManager.NavigateTo("/categoria/detail/" + pId);
+    }
+
+    void goDelete(int pId)
+    {
+        NavManager.NavigateTo("/categoria/delete/" + pId);
+    }
+}

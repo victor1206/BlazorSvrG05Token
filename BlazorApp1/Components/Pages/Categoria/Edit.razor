@@ -1,0 +1,75 @@
+﻿@page "/categoria/edit/{pId:int}"
+@using BlazorApp1.DTO.CategoriaDTO
+@using BlazorApp1.Services
+<h3>Create</h3>
+
+<EditForm Model="categoriaModificar" OnValidSubmit="Modificar">
+    
+    <div class="mb-3">
+        <label class="form-label">Nombre Usuario</label>
+        <InputNumber style="display:none;" @bind-Value="categoriaModificar.id" />
+        <InputText class="form-control" @bind-Value="categoriaModificar.nombre" />
+    </div>
+
+    <button type="submit" class="btn btn-success">Guardar</button>
+    <button class="btn btn-dark" @onclick="Index">Regresar</button>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
+
+</EditForm>
+
+@inject CategoriaService categoriaService;
+@inject NavigationManager NavManager;
+
+@code {
+    private CategoriaModificarDTO categoriaModificar = new CategoriaModificarDTO();
+    private CategoriaSalidaDTO categoria = new CategoriaSalidaDTO();
+    private string errorMessage;
+
+    [Parameter]
+    public int pId { get; set; }
+
+    private bool isFirstRender = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Solo queremos hacer esto en la primera renderización
+        if (firstRender)
+        {
+            try
+            {
+                categoria = await categoriaService.GetCategoriaId(pId); // Llamamos al método para cargar productos
+                categoriaModificar.id = categoria.Id;
+                categoriaModificar.nombre = categoria.Nombre;
+                StateHasChanged(); // Llamamos a StateHasChanged para refrescar la UI
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al cargar la Categoria: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task Modificar()
+    {
+        var resultado = await categoriaService.PutCategoria(categoriaModificar);
+        if (resultado)
+        {
+            Index();
+            return;
+        }
+        else
+        {
+            errorMessage = "Error al guardar la categoria";    
+        }
+
+    }
+
+    void Index()
+    {
+        NavManager.NavigateTo("/categoria/index", true);
+    }
+}
